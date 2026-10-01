@@ -1,1 +1,1 @@
-# legal-easy
+# legal-ease
