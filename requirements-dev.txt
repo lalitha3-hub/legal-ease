@@ -1,0 +1,5 @@
+# Development and testing dependencies — NOT installed on Vercel
+-r requirements.txt
+streamlit>=1.40.0
+pytest>=8.3.0
+httpx>=0.27.0
