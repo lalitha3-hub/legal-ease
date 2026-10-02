@@ -1,4 +1,17 @@
-import html
+"""
+LegalEase — Streamlit frontend.
+
+This application communicates with the FastAPI backend via HTTP.
+Set LEGALEASE_API_URL to the deployed backend URL (Vercel) in production.
+
+Local development:
+    LEGALEASE_API_URL=http://127.0.0.1:8000
+
+Production (Streamlit Cloud):
+    Add LEGALEASE_API_URL = https://your-vercel-app.vercel.app
+    in the Streamlit Cloud app secrets or environment variables.
+"""
+
 import os
 
 import requests
@@ -9,62 +22,35 @@ from dotenv import load_dotenv
 from backend.utils.exporters import (
     create_docx,
     create_pdf,
-    create_txt
+    create_txt,
 )
-
 
 load_dotenv()
 
-
-BACKEND_URL = os.getenv(
-    "LEGALEASE_API_URL",
-    "http://127.0.0.1:8000"
-)
-
+BACKEND_URL: str = (
+    os.getenv("LEGALEASE_API_URL") or "http://127.0.0.1:8000"
+).rstrip("/")
 
 st.set_page_config(
     page_title="LegalEase",
     page_icon="⚖️",
-    layout="wide"
+    layout="wide",
 )
-
 
 st.markdown(
     """
     <style>
-
-    .main {
-        background-color: #0b1120;
-    }
-
-    .block-container {
-        max-width: 1200px;
-        padding-top: 2rem;
-    }
-
+    .main { background-color: #0b1120; }
+    .block-container { max-width: 1200px; padding-top: 2rem; }
     .hero {
         padding: 25px;
         border-radius: 18px;
-        background: linear-gradient(
-            135deg,
-            #111827,
-            #172554
-        );
+        background: linear-gradient(135deg, #111827, #172554);
         border: 1px solid #26324d;
         margin-bottom: 25px;
     }
-
-    .hero h1 {
-        color: #f8fafc;
-        font-size: 42px;
-        margin-bottom: 5px;
-    }
-
-    .hero p {
-        color: #94a3b8;
-        font-size: 17px;
-    }
-
+    .hero h1 { color: #f8fafc; font-size: 42px; margin-bottom: 5px; }
+    .hero p  { color: #94a3b8; font-size: 17px; }
     .preview {
         background: #111827;
         border: 1px solid #334155;
@@ -77,14 +63,7 @@ st.markdown(
         line-height: 1.7;
         font-family: Georgia, serif;
     }
-
-    .section-title {
-        font-size: 22px;
-        font-weight: 700;
-        margin-top: 20px;
-        margin-bottom: 10px;
-    }
-
+    .section-title { font-size: 22px; font-weight: 700; margin-top: 20px; margin-bottom: 10px; }
     .warning {
         padding: 12px;
         border-radius: 10px;
@@ -92,25 +71,20 @@ st.markdown(
         border: 1px solid #92400e;
         color: #fed7aa;
     }
-
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-
 
 st.markdown(
     """
     <div class="hero">
         <h1>⚖️ LegalEase</h1>
-        <p>
-            AI-Powered Legal Document Generator
-        </p>
+        <p>AI-Powered Legal Document Generator</p>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-
 
 st.markdown(
     """
@@ -121,21 +95,17 @@ st.markdown(
         legal professional before being used for legal purposes.
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-
 
 st.markdown(
     '<div class="section-title">Document Information</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-
 
 col1, col2 = st.columns(2)
 
-
 with col1:
-
     document_type = st.selectbox(
         "Document Type",
         [
@@ -148,18 +118,15 @@ with col1:
             "Partnership Agreement",
             "Business Agreement",
             "General Contract",
-            "Custom Agreement"
-        ]
+            "Custom Agreement",
+        ],
     )
-
 
 with col2:
-
     effective_date = st.text_input(
         "Effective Date",
-        placeholder="Example: April 10, 2026"
+        placeholder="Example: April 10, 2026",
     )
-
 
 parties = st.text_area(
     "Parties Involved",
@@ -168,9 +135,8 @@ parties = st.text_area(
         "Jane Doe (Service Provider)\n"
         "TechNova Inc. (Client)"
     ),
-    height=120
+    height=120,
 )
-
 
 terms = st.text_area(
     "Terms & Conditions",
@@ -181,186 +147,112 @@ terms = st.text_area(
         "Confidentiality must be maintained; "
         "Work must be completed by the deadline"
     ),
-    height=160
+    height=160,
 )
-
 
 logo = st.file_uploader(
     "Optional Company Logo",
-    type=[
-        "png",
-        "jpg",
-        "jpeg"
-    ]
+    type=["png", "jpg", "jpeg"],
 )
 
-
 if "document_text" not in st.session_state:
-
     st.session_state.document_text = ""
 
-
 if "generated" not in st.session_state:
-
     st.session_state.generated = False
 
-
 st.markdown("")
-
 
 generate_button = st.button(
     "✨ Generate Document",
     type="primary",
-    use_container_width=True
+    use_container_width=True,
 )
 
-
 if generate_button:
-
     if not effective_date.strip():
-
-        st.error(
-            "Please enter the effective date."
-        )
-
+        st.error("Please enter the effective date.")
     elif not parties.strip():
-
-        st.error(
-            "Please enter the parties involved."
-        )
-
+        st.error("Please enter the parties involved.")
     elif not terms.strip():
-
-        st.error(
-            "Please enter the terms and conditions."
-        )
-
+        st.error("Please enter the terms and conditions.")
     else:
-
         payload = {
             "document_type": document_type,
             "parties": parties,
             "terms": terms,
-            "effective_date": effective_date
+            "effective_date": effective_date,
         }
 
-        with st.spinner(
-            "Generating your legal document..."
-        ):
-
+        with st.spinner("Generating your legal document..."):
             try:
-
                 response = requests.post(
                     f"{BACKEND_URL}/generate",
                     json=payload,
-                    timeout=120
+                    timeout=120,
                 )
 
                 if response.status_code == 200:
-
                     result = response.json()
-
-                    st.session_state.document_text = (
-                        result["content"]
-                    )
-
+                    st.session_state.document_text = result["content"]
                     st.session_state.generated = True
-
-                    st.success(
-                        "Document generated successfully."
-                    )
-
+                    st.success("Document generated successfully.")
                 else:
-
                     try:
-                        detail = response.json().get(
-                            "detail",
-                            response.text
-                        )
+                        detail = response.json().get("detail", response.text)
                     except Exception:
                         detail = response.text
-
-                    st.error(
-                        f"Backend error: {detail}"
-                    )
+                    st.error(f"Backend error ({response.status_code}): {detail}")
 
             except requests.exceptions.ConnectionError:
-
                 st.error(
-                    "Cannot connect to FastAPI backend. "
-                    "Make sure the backend is running on "
-                    f"{BACKEND_URL}."
+                    f"Cannot connect to the backend at {BACKEND_URL}. "
+                    "Check that the backend is running and LEGALEASE_API_URL is set correctly."
                 )
-
             except requests.exceptions.Timeout:
-
-                st.error(
-                    "The request timed out. "
-                    "Please try again."
-                )
-
+                st.error("The request timed out. Please try again.")
             except Exception as error:
-
-                st.error(
-                    f"Unexpected error: {error}"
-                )
-
+                st.error(f"Unexpected error: {error}")
 
 if st.session_state.generated:
-
     st.markdown("---")
 
     st.markdown(
         '<div class="section-title">Document Preview</div>',
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-    st.markdown(
-        st.session_state.document_text,
-        unsafe_allow_html=False
-    )
+    st.markdown(st.session_state.document_text, unsafe_allow_html=False)
 
     st.markdown(
         '<div class="section-title">Edit Document</div>',
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     edited_text = st.text_area(
         "Edit the generated document below",
         value=st.session_state.document_text,
         height=600,
-        label_visibility="collapsed"
+        label_visibility="collapsed",
     )
-
     st.session_state.document_text = edited_text
 
     st.markdown(
         '<div class="section-title">Branding</div>',
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     logo_bytes = None
-
     if logo is not None:
-
         logo_bytes = logo.getvalue()
-
-        st.image(
-            logo,
-            width=150
-        )
-
+        st.image(logo, width=150)
 
     st.markdown(
         '<div class="section-title">Download</div>',
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-
-    download_col1, download_col2, download_col3 = (
-        st.columns(3)
-    )
-
+    download_col1, download_col2, download_col3 = st.columns(3)
 
     safe_name = (
         document_type
@@ -368,65 +260,49 @@ if st.session_state.generated:
         .replace("/", "_")
     )
 
-
-    txt_data = create_txt(
-        st.session_state.document_text
-    )
-
+    txt_data = create_txt(st.session_state.document_text)
 
     docx_data = create_docx(
         text=st.session_state.document_text,
         document_type=document_type,
         terms=terms,
-        logo_bytes=logo_bytes
+        logo_bytes=logo_bytes,
     )
-
 
     pdf_data = create_pdf(
         text=st.session_state.document_text,
-        document_type=document_type
+        document_type=document_type,
     )
 
-
     with download_col1:
-
         st.download_button(
             label="📄 Download TXT",
             data=txt_data,
             file_name=f"{safe_name}.txt",
             mime="text/plain",
-            use_container_width=True
+            use_container_width=True,
         )
 
-
     with download_col2:
-
         st.download_button(
             label="📝 Download DOCX",
             data=docx_data,
             file_name=f"{safe_name}.docx",
             mime=(
-                "application/"
-                "vnd.openxmlformats-officedocument."
-                "wordprocessingml.document"
+                "application/vnd.openxmlformats-officedocument"
+                ".wordprocessingml.document"
             ),
-            use_container_width=True
+            use_container_width=True,
         )
 
-
     with download_col3:
-
         st.download_button(
             label="📕 Download PDF",
             data=pdf_data,
             file_name=f"{safe_name}.pdf",
             mime="application/pdf",
-            use_container_width=True
+            use_container_width=True,
         )
 
-
 st.markdown("---")
-
-st.caption(
-    "LegalEase | AI-assisted legal document drafting"
-)
+st.caption("LegalEase | AI-assisted legal document drafting")

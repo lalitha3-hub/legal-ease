@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 
-# ── Python ────────────────────────────────────────────────────────────────────
+# ── Python bytecode & caches ──────────────────────────────────────────────────
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
@@ -18,6 +19,7 @@ ENV/
 
 # ── Testing & coverage ────────────────────────────────────────────────────────
 .pytest_cache/
+**/.pytest_cache/
 .coverage
 htmlcov/
 coverage.xml
@@ -39,6 +41,9 @@ build/
 .DS_Store
 Thumbs.db
 
-# ── Logs ──────────────────────────────────────────────────────────────────────
+# ── Logs & generated output ───────────────────────────────────────────────────
 *.log
 logs/
+
+# ── Vercel local build output ─────────────────────────────────────────────────
+.vercel/

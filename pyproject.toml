@@ -1,2 +1,11 @@
-[tool.vercel]
-entrypoint = "backend.main:app"
+[project]
+name = "legal-ease"
+version = "1.0.0"
+description = "LegalEase — AI-powered legal document generation API"
+requires-python = ">=3.12"
+
+# Runtime dependencies are declared in requirements.txt.
+# This [project] table exists solely to satisfy uv's requirement
+# for a valid PEP-517 manifest when pyproject.toml is present.
+# Vercel installs packages from requirements.txt, not from here.
+dependencies = []
